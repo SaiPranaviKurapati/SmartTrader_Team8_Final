@@ -8,6 +8,7 @@ import logging
 from xgb_wrapper import XGBRegressorWrapper
 import sys
 import os
+import joblib
 
 logging.basicConfig(
     stream=sys.stdout,
@@ -25,15 +26,15 @@ try:
     scaler_target_path = os.path.join(BASE_PATH, "scaler_target.pkl")
 
     with open(model_path, "rb") as model_file:
-        xgboost_model = pickle.load(model_file)
+        xgboost_model = joblib.load(model_file)
         logging.info("XGBoost model loaded successfully.")
 
     with open(scaler_features_path, "rb") as scaler_features_file:
-        scaler_features = pickle.load(scaler_features_file)
+        scaler_features = joblib.load(scaler_features_file)
         logging.info("Feature scaler loaded successfully.")
 
     with open(scaler_target_path, "rb") as scaler_target_file:
-        scaler_target = pickle.load(scaler_target_file)
+        scaler_target = joblib.load(scaler_target_file)
         logging.info("Target scaler loaded successfully.")
 
 except Exception as e:
