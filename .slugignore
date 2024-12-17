@@ -1,1 +1,10 @@
+*.csv
+*.tsv
+*.log
+*.gz
+*.zip
+*.tar.gz
+*.h5
+*.pkl
 __pycache__/
+*.ipynb
