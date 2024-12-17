@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartTrader Console</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        h1, p {
+            text-align: center;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 16px;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .section-title {
+            margin-top: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SmartTrader Console</h1>
+        <p>Predict stock prices and trading strategies</p>
+
+        <label for="date-picker">Start Date</label>
+        <input type="date" id="date-picker">
+        <button onclick="predictPrices()">Predict</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function predictPrices() {
+            const dateInput = document.getElementById("date-picker").value;
+            const resultsDiv = document.getElementById("results");
+
+            if (!dateInput) {
+                alert("Please select a start date.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ chosen_date: dateInput })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    let resultHtml = `
+                        <div class="section-title">Predicted Prices for the Next 5 Business Days</div>
+                        <table>
+                            <tr>
+                                <th>Highest Price</th>
+                                <th>Lowest Price</th>
+                                <th>Average Closing Price</th>
+                            </tr>
+                            <tr>
+                                <td>${Math.max(...data.predicted_prices).toFixed(2)}</td>
+                                <td>${Math.min(...data.predicted_prices).toFixed(2)}</td>
+                                <td>${(data.predicted_prices.reduce((a, b) => a + b, 0) / data.predicted_prices.length).toFixed(2)}</td>
+                            </tr>
+                        </table>
+                        <div class="section-title">Recommended Trading Strategy</div>
+                        <table>
+                            <tr>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>`;
+
+                    data.dates.forEach((date, index) => {
+                        resultHtml += `
+                            <tr>
+                                <td>${date}</td>
+                                <td>${data.strategy[index]}</td>
+                            </tr>`;
+                    });
+
+                    resultHtml += `</table>`;
+                    resultsDiv.innerHTML = resultHtml;
+
+                } else {
+                    resultsDiv.innerHTML = `<p style="color: red; text-align: center;">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                console.error("Error fetching predictions:", error);
+                resultsDiv.innerHTML = `<p style="color: red; text-align: center;">Failed to fetch predictions. Please try again later.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
